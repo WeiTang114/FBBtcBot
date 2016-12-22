@@ -94,14 +94,14 @@ class BTCBot(fbchat.Client):
             try:
                 price = int(msg.split(' ')[1])
                 self._add_listener(uid, 'up', price)
-                return 'Added: %s, %s, %d' % (uid, 'up', price)
+                return 'Added: %s, %d' % ('up', price)
             except:
                 return 'wrong format. (/up price)'
         elif msg.startswith('/down'):
             try:
                 price = int(msg.split(' ')[1])
                 self._add_listener(uid, 'down', price)
-                return 'Added: %s, %s, %d' % (uid, 'down', price)
+                return 'Added: %s, %d' % ('down', price)
             except:
                 return 'wrong format. (/down price)'
 
@@ -141,9 +141,9 @@ class BTCBot(fbchat.Client):
         print 'write_listeners',
         self.print_listeners()
         with open(self.listeners_file, 'w+') as f:
-            for uid in self.listeners:
-                for (updown, price, done) in self.listeners[uid]:
-                    print>>f, '%s,%s,%d,%d' % (uid, updown, price, int(done))
+            for (uid, updown, price, done) in self.iter_listeners():
+                print>>f, '%s,%s,%d,%d' % (uid, updown, price, int(done))
+
 
     def print_listeners(self):
         print self.listeners
