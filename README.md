@@ -1,6 +1,11 @@
 # FBBtcBot
 An FB bot to notify you the BitCoin price.
 
+# Requirements
+
+- [fbchat](https://github.com/carpedm20/fbchat). 
+  - Note that [this patch](https://github.com/carpedm20/fbchat/pull/74/files) must be applied for **group** messaging.
+
 # Usage
 
 ## Start the Bot

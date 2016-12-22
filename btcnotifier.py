@@ -26,12 +26,12 @@ def job_watch_btc(bot, period_sec):
             # print 'bot(parsing):', bot
             # bot.print_listeners()
             
-            for (uid, updown, price, done) in bot.iter_listeners(True):
+            for (uid, isgroup, updown, price, done) in bot.iter_listeners(True):
                 # print 'iter:', (uid, updown, price, done)
                 if (updown == 'up' and curr_price > price) or \
                         (updown == 'down' and curr_price < price):
                     # print 'go to do notify'
-                    bot.notify(uid, updown, curr_price, price)
+                    bot.notify(uid, isgroup, updown, curr_price, price)
                     # print 'done do notify'
         except Exception as e:
             print 'except:', str(e)
@@ -58,45 +58,61 @@ class BTCBot(fbchat.Client):
         self.markAsRead(author_id) #mark read
 
         print("%s said: %s"%(author_id, message))
-        # print 'bot:', self
+    
+        print 'meta:', metadata['delta']
 
         #if you are not the author, echo
         if str(author_id) != str(self.uid):
-            replymsg = self._handle(author_id, message)
+            is_group = self._is_group(metadata)
+            msg_type = 'group' if is_group else 'user'
+            rcpt_id = author_id if not is_group else self._get_threadid(metadata)
+
+            print 'rcpt_id', rcpt_id, 'is_group', is_group
+            replymsg = self._handle(rcpt_id, is_group, message)
             if replymsg:
-                self.send(author_id, replymsg)
+                self.send(rcpt_id, replymsg, message_type=msg_type)
 
     def iter_listeners(self, only_not_done=False):
         for uid in self.listeners:
-            for (updown, price, done) in self.listeners[uid]:
+            for (isgroup, updown, price, done) in self.listeners[uid]:
                 if only_not_done and done:
                     continue
-                yield (uid, updown, price, done)
+                yield (uid, isgroup, updown, price, done)
 
-    def notify(self, uid, updown, curr_price, price):
-        print 'notify:', uid, updown, curr_price, price
+    def notify(self, uid, isgroup, updown, curr_price, price):
+        print 'notify:', uid, isgroup, updown, curr_price, price
         msg = '比特幣現價 %f. (%s, %d)' % (curr_price, updown, price)
-        self.send(uid, msg)
+        msg_type = 'group' if isgroup else 'user'
+        self.send(uid, msg, message_type=msg_type)
         for i,listen in enumerate(self.listeners[uid]):
-            if listen[0] == updown and listen[1] == price:
-                self.listeners[uid][i][2] = True
+            if listen[1] == updown and listen[2] == price:
+                self.listeners[uid][i][3] = True
         
         self._write_listeners()
 
+    def _is_group(self, msg_metadata):
+        if 'otherUserFbId' in msg_metadata['delta']['messageMetadata']['threadKey']:
+            return False
+        else:
+            # 'threadFbId'
+            return True
 
-    def _handle(self, uid, msg):
+    def _get_threadid(self, msg_metadata):
+        return msg_metadata['delta']['messageMetadata']['threadKey']['threadFbId'] 
+
+    def _handle(self, uid, isgroup, msg):
         # print 'bot(handle):', self
         if msg.startswith('/up'):
             try:
                 price = int(msg.split(' ')[1])
-                self._add_listener(uid, 'up', price)
+                self._add_listener(uid, isgroup, 'up', price)
                 return 'Added: %s, %d' % ('up', price)
             except:
                 return 'wrong format. (/up price)'
         elif msg.startswith('/down'):
             try:
                 price = int(msg.split(' ')[1])
-                self._add_listener(uid, 'down', price)
+                self._add_listener(uid, isgroup, 'down', price)
                 return 'Added: %s, %d' % ('down', price)
             except:
                 return 'wrong format. (/down price)'
@@ -107,7 +123,7 @@ class BTCBot(fbchat.Client):
         elif msg.startswith('/list'):
             print '/listtt'
             l = []
-            for (uid_, updown, price, _) in self.iter_listeners(only_not_done=True):
+            for (uid_, isgroup, updown, price, _) in self.iter_listeners(only_not_done=True):
                 if uid_ == uid:
                     l.append(str((updown, price)))
             return '\n'.join(l)
@@ -125,28 +141,29 @@ class BTCBot(fbchat.Client):
                 print 'line: %s' % l.strip()
                 if not l.strip():
                     continue
-                uid, updown, price, done = l.strip().split(',')
+                uid, isgroup, updown, price, done = l.strip().split(',')
+                isgroup = bool(int(isgroup))
                 price = int(price)
                 done = bool(int(done))
                 if uid not in d:
                     d[uid] = []
-                d[uid].append([updown, price, done])
+                d[uid].append([isgroup, updown, price, done])
 
         conf = d
         return conf
 
-    def _add_listener(self, uid, updown, price):
+    def _add_listener(self, uid, isgroup, updown, price):
         if uid not in self.listeners:
             self.listeners[uid] = []
-        self.listeners[uid].append([updown, price, False])
+        self.listeners[uid].append([isgroup, updown, price, False])
         self._write_listeners()
 
     def _write_listeners(self):
         print 'write_listeners',
         self.print_listeners()
         with open(self.listeners_file, 'w+') as f:
-            for (uid, updown, price, done) in self.iter_listeners():
-                print>>f, '%s,%s,%d,%d' % (uid, updown, price, int(done))
+            for (uid, isgroup, updown, price, done) in self.iter_listeners():
+                print>>f, '%s,%d,%s,%d,%d' % (uid, int(isgroup), updown, price, int(done))
 
 
     def print_listeners(self):
