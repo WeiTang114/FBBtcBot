@@ -43,10 +43,6 @@ def job_listenbot(bot):
     print 'listening'
     # bot.listen()    
 
-def init_bot():
-    bot = BTCBot('dolala1357@gmail.com', 'gg1qaz2wsx')
-    return bot
-
 
 class BTCBot(fbchat.Client):
 
