@@ -15,7 +15,8 @@ python btcnotifier.py
 Send a message to your bot for various functions.
 
 1. /now: for current btc price
-2. /up \<price\>: for notification when the current price higher than \<price\>
+2. /up \<price\>: alert when the current price higher than \<price\>
 3. /down \<price\>: else.
+4. /list: list your untriggered alerts.
 
 **Note that each notification will work only once.**

@@ -107,6 +107,14 @@ class BTCBot(fbchat.Client):
 
         elif msg.startswith('/now'):
             return str(self.curr_price) + ' @ ' + self.curr_price_time
+
+        elif msg.startswith('/list'):
+            print '/listtt'
+            l = []
+            for (uid_, updown, price, _) in self.iter_listeners(only_not_done=True):
+                if uid_ == uid:
+                    l.append(str((updown, price)))
+            return '\n'.join(l)
             
         else:
             return "Doesn't mean anythin to me."
