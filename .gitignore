@@ -1,0 +1,7 @@
+btcnotifier.ini
+listeners.list
+
+*.swo
+*.swn
+*.swp
+*.pyc

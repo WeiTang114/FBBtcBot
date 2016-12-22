@@ -129,7 +129,7 @@ class BTCBot(fbchat.Client):
             return '\n'.join(l)
             
         else:
-            return "Doesn't mean anythin to me."
+            return None
     
     def _load_listeners(self):
         if not os.path.exists(self.listeners_file):
