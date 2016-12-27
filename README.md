@@ -4,7 +4,7 @@ An FB bot to notify you the BitCoin price.
 # Requirements
 
 - [fbchat](https://github.com/carpedm20/fbchat). 
-  - Note that [this patch](https://github.com/carpedm20/fbchat/pull/74/files) must be applied for **group** messaging.
+  - Note that [this patch](https://github.com/carpedm20/fbchat/pull/74/files) and [this patch](https://github.com/carpedm20/fbchat/pull/77/commits/62c5ae793269dbcc4bdd5b5cb12865a6546fda15) must be applied for **group** messaging.
 
 # Usage
 
